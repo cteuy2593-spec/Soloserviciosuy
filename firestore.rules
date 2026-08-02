@@ -1,0 +1,85 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // --- Perfiles de usuario ---
+    // Lectura pública (necesaria para navegar el marketplace y ver perfiles de otros).
+    // La escritura está limitada al dueño del perfil, y los campos calculados por el
+    // servidor (calificación, verificación) no pueden ser modificados desde el cliente.
+    match /users/{uid} {
+      allow read: if true;
+      allow create: if isOwner(uid);
+      allow update: if isOwner(uid)
+        && request.resource.data.calificacionPromedio == resource.data.calificacionPromedio
+        && request.resource.data.cantidadResenas == resource.data.cantidadResenas
+        && request.resource.data.verificacion == resource.data.verificacion;
+      allow delete: if false;
+    }
+
+    // --- Publicaciones de servicios (ofertas/solicitudes) ---
+    match /listings/{listingId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.autorUid == request.auth.uid;
+      allow update, delete: if isSignedIn() && resource.data.autorUid == request.auth.uid;
+    }
+
+    // --- Reservas ---
+    // Solo el cliente y el prestador involucrados pueden leer o modificar una reserva.
+    match /bookings/{bookingId} {
+      allow read: if isSignedIn()
+        && (resource.data.clienteUid == request.auth.uid || resource.data.prestadorUid == request.auth.uid);
+      allow create: if isSignedIn()
+        && (request.resource.data.clienteUid == request.auth.uid || request.resource.data.prestadorUid == request.auth.uid);
+      allow update: if isSignedIn()
+        && (resource.data.clienteUid == request.auth.uid || resource.data.prestadorUid == request.auth.uid);
+      allow delete: if false;
+    }
+
+    // --- Chat ---
+    match /chatThreads/{threadId} {
+      allow read: if isSignedIn() && request.auth.uid in resource.data.participantes;
+      allow create: if isSignedIn() && request.auth.uid in request.resource.data.participantes;
+      allow update: if isSignedIn() && request.auth.uid in resource.data.participantes;
+
+      match /messages/{messageId} {
+        allow read: if isSignedIn()
+          && request.auth.uid in get(/databases/$(database)/documents/chatThreads/$(threadId)).data.participantes;
+        allow create: if isSignedIn()
+          && request.resource.data.autorUid == request.auth.uid
+          && request.auth.uid in get(/databases/$(database)/documents/chatThreads/$(threadId)).data.participantes;
+      }
+    }
+
+    // --- Reseñas ---
+    // Inmutables una vez creadas: el promedio de calificación se recalcula en una Cloud Function.
+    match /reviews/{reviewId} {
+      allow read: if true;
+      allow create: if isSignedIn() && request.resource.data.autorUid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // --- Verificación de identidad ---
+    // El usuario puede crear su propia solicitud y ver su estado, pero no puede aprobarse
+    // a sí mismo: la revisión y el cambio de estado los hace un admin (Admin SDK, sin rules).
+    match /verificationRequests/{requestId} {
+      allow read: if isSignedIn() && resource.data.uid == request.auth.uid;
+      allow create: if isSignedIn() && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // --- Preferencias de pago ---
+    // Gestionadas exclusivamente por las Cloud Functions (Admin SDK), nunca desde el cliente.
+    match /paymentPreferences/{preferenceId} {
+      allow read, write: if false;
+    }
+  }
+}

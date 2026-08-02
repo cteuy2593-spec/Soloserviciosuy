@@ -1,0 +1,57 @@
+{
+  "expo": {
+    "name": "SoloServiciosUY",
+    "slug": "soloserviciosuy",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "scheme": "soloserviciosuy",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "uy.soloservicios.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "Necesitamos acceso a la cámara para que puedas subir una foto de perfil o tu documento de identidad para la verificación.",
+        "NSPhotoLibraryUsageDescription": "Necesitamos acceso a tus fotos para que puedas subir una foto de perfil o tu documento de identidad para la verificación."
+      }
+    },
+    "android": {
+      "package": "uy.soloservicios.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#0F766E",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0F766E",
+          "image": "./assets/icon.png",
+          "imageWidth": 160
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Necesitamos acceso a tus fotos para que puedas subir una foto de perfil o tu documento de identidad.",
+          "cameraPermission": "Necesitamos acceso a la cámara para que puedas subir una foto de perfil o tu documento de identidad."
+        }
+      ]
+    ],
+    "extra": {
+      "router": {}
+    }
+  }
+}
