@@ -1,7 +1,8 @@
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { app } from './firebase';
 
-const functions = getFunctions(app, 'southamerica-east1');
+// Debe coincidir con la región configurada en functions/src/index.ts (setGlobalOptions).
+const functions = getFunctions(app, 'us-central1');
 
 interface CreatePreferenceResponse {
   preferenceId: string;

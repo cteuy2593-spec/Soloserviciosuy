@@ -85,8 +85,13 @@ cd functions && npm install && cd ..
 
 1. Andá a la [consola de Firebase](https://console.firebase.google.com/) y creá un proyecto nuevo.
 2. Activá **Authentication** → método "Email/contraseña".
-3. Activá **Firestore Database** (modo producción).
-4. Activá **Storage**.
+3. Activá **Firestore Database** (modo producción). Elegí la región más cercana disponible
+   (en el plan gratuito Spark suele ofrecer solo Estados Unidos/Bélgica/Singapur — elegí
+   Estados Unidos). **La región de las Cloud Functions en `functions/src/index.ts`
+   (`setGlobalOptions`) tiene que coincidir con esta**, porque los triggers de Firestore
+   fallan al desplegar si están en regiones distintas. Ya está configurado en `us-central1`
+   para que coincida con la región típica de Estados Unidos.
+4. Activá **Storage**, en la misma región que Firestore.
 5. Agregá una app "Web" dentro del proyecto (aunque la app sea móvil, el SDK de Firebase para
    Expo usa la configuración de la app web) y copiá las credenciales que te da.
 

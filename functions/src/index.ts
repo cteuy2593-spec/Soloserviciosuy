@@ -8,7 +8,10 @@ import { defineSecret } from 'firebase-functions/params';
 import { createMercadoPagoPreference, getMercadoPagoPayment } from './mercadopago';
 
 initializeApp();
-setGlobalOptions({ region: 'southamerica-east1', maxInstances: 10 });
+// La región debe coincidir con la de tu base de datos de Firestore (ver README):
+// los triggers de Firestore (onReviewCreated, onVerificationRequestUpdated) fallan
+// al desplegar si la función y la base de datos están en regiones distintas.
+setGlobalOptions({ region: 'us-central1', maxInstances: 10 });
 
 const db = getFirestore();
 
@@ -45,7 +48,7 @@ export const createPaymentPreference = onCall(
     }
 
     const projectId = process.env.GCLOUD_PROJECT;
-    const webhookUrl = `https://southamerica-east1-${projectId}.cloudfunctions.net/mercadopagoWebhook`;
+    const webhookUrl = `https://us-central1-${projectId}.cloudfunctions.net/mercadopagoWebhook`;
 
     const preference = await createMercadoPagoPreference({
       accessToken: MERCADOPAGO_ACCESS_TOKEN.value(),
